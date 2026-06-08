@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantumDB - 高性能分布式数据库ORM框架(testing, do not exist)</title>
+    <meta name="description" content="QuantumDB 是一个开源的、高性能的分布式数据库ORM框架，支持多种数据库后端，提供优雅的查询构建器和自动迁移工具。">
+    <meta name="keywords" content="QuantumDB, ORM, 数据库, 开源, TypeScript, Node.js, 分布式数据库">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛️</text></svg>">
+    <!-- 使用CDN图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --border-color: #30363d;
+            --border-highlight: #484f58;
+            --text-primary: #e6edf3;
+            --text-secondary: #b0b8c1;
+            --text-muted: #8b949e;
+            --text-link: #58a6ff;
+            --text-link-hover: #79c0ff;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #a371f7;
+            --accent-orange: #d2991d;
+            --accent-red: #f85149;
+            --accent-cyan: #39d2c0;
+            --accent-pink: #db61a2;
+            --gradient-hero: linear-gradient(135deg, #1a1f35 0%, #0d1b2a 30%, #1a0f2e 60%, #0d1117 100%);
+            --gradient-card: linear-gradient(145deg, #1c2128 0%, #1a1f26 100%);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
+            --shadow-glow-blue: 0 0 20px rgba(88, 166, 255, 0.25);
+            --shadow-glow-purple: 0 0 20px rgba(163, 113, 247, 0.25);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* ============ RESET & BASE ============ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 20% 10%, rgba(88, 166, 255, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 75% 30%, rgba(163, 113, 247, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 70%, rgba(57, 210, 192, 0.03) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            border: 2px solid var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-highlight);
+        }
+
+        /* ============ ANIMATION KEYFRAMES ============ */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes floatSlow {
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+        @keyframes pulseGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(88, 166, 255, 0.7), 0 0 50px rgba(88, 166, 255, 0.25);
+            }
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+        @keyframes typing {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+        @keyframes cursorBlink {
+            0%,
+            100% {
+                border-color: transparent;
+            }
+            50% {
+                border-color: var(--accent-green);
+            }
+        }
+        @keyframes codeLineAppear {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes borderGlow {
+            0%,
+            100% {
+                border-color: var(--border-color);
+                box-shadow: 0 0 0px transparent;
+            }
+            50% {
+                border-color: var(--accent-blue);
+                box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
+            }
+        }
+        @keyframes statCountUp {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        @keyframes bgShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* ============ UTILITY CLASSES ============ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        .highlight {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+        .highlight-purple {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+        .highlight-green {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+        .highlight-cyan {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* ============ TOP ANNOUNCEMENT BAR ============ */
+        .announcement-bar {
+            background: linear-gradient(90deg, #1a1f35, #1d1535, #1a1f35);
+            background-size: 200% 100%;
+            animation: bgShift 4s ease infinite;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+            text-align: center;
+            font-size: 0.875rem;
+            position: relative;
+            z-index: 1001;
+        }
+        .announcement-bar a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-fast);
+        }
+        .announcement-bar a:hover {
+            color: #5eeadb;
+            text-decoration: underline;
+        }
+        .announcement-bar .badge-new {
+            display: inline-block;
+            background: var(--accent-purple);
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-right: 6px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            animation: pulseGlow 2.5s ease-in-out infinite;
+        }
+
+        /* ============ NAVIGATION ============ */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-color);
+            transition: all var(--transition-normal);
+        }
+        .navbar.scrolled {
+            box-shadow: var(--shadow-lg);
+            border-bottom-color: var(--border-highlight);
+        }
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+            transition: opacity var(--transition-fast);
+        }
+        .nav-brand:hover {
+            opacity: 0.85;
+        }
+        .nav-brand .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            box-shadow: var(--shadow-glow-blue);
+            transition: transform var(--transition-normal);
+        }
+        .nav-brand:hover .brand-icon {
+            transform: rotate(-8deg) scale(1.08);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            position: relative;
+        }
+        .nav-links a:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .nav-links a.nav-active {
+            color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.08);
+        }
+        .nav-github-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+        .nav-github-btn:hover {
+            background: var(--border-color);
+            border-color: var(--border-highlight);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-github-btn .star-count {
+            background: var(--bg-primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            color: var(--accent-orange);
+            font-weight: 700;
+        }
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-fast);
+        }
+        .nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ============ HERO SECTION ============ */
+        .hero-section {
+            position: relative;
+            padding: 80px 0 70px;
+            text-align: center;
+            overflow: hidden;
+            background: var(--gradient-hero);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -20%;
+            width: 80%;
+            height: 180%;
+            background: radial-gradient(ellipse, rgba(88, 166, 255, 0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            right: -15%;
+            width: 70%;
+            height: 160%;
+            background: radial-gradient(ellipse, rgba(163, 113, 247, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 6px 18px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            transition: all var(--transition-normal);
+        }
+        .hero-badge:hover {
+            border-color: var(--border-highlight);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .hero-badge .version-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        .hero-title {
+            font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, #e6edf3 0%, #c9d1d9 30%, #58a6ff 60%, #a371f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: bgShift 5s ease infinite;
+        }
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+        }
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 26px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-normal);
+            border: 2px solid transparent;
+            white-space: nowrap;
+            letter-spacing: 0.1px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.35);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(59, 130, 246, 0.55);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--border-highlight);
+            color: var(--text-primary);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #fff;
+            transform: translateY(-2px);
+        }
+        .btn-ghost {
+            background: transparent;
+            border-color: transparent;
+            color: var(--text-link);
+            padding: 10px 18px;
+        }
+        .btn-ghost:hover {
+            color: var(--text-link-hover);
+            background: rgba(88, 166, 255, 0.06);
+        }
+        .btn-sm {
+            padding: 7px 16px;
+            font-size: 0.82rem;
+            border-radius: 30px;
+        }
+        .btn-xs {
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            border-radius: 20px;
+            gap: 4px;
+        }
+        /* 终端模拟 */
+        .hero-terminal {
+            margin: 50px auto 0;
+            max-width: 700px;
+            background: #0a0e14;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            text-align: left;
+            animation: fadeInScale 0.9s ease-out 0.2s both;
+            position: relative;
+            z-index: 1;
+        }
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #11161d;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transition: opacity var(--transition-fast);
+        }
+        .terminal-dot.red {
+            background: #ff5f56;
+        }
+        .terminal-dot.yellow {
+            background: #ffbd2e;
+        }
+        .terminal-dot.green {
+            background: #27c93f;
+        }
+        .terminal-title {
+            margin-left: 10px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+        .terminal-body {
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: #c9d1d9;
+            overflow-x: auto;
+        }
+        .terminal-body .prompt {
+            color: var(--accent-green);
+            user-select: none;
+        }
+        .terminal-body .cmd {
+            color: #e6edf3;
+        }
+        .terminal-body .output-success {
+            color: var(--accent-cyan);
+        }
+        .terminal-body .output-dim {
+            color: var(--text-muted);
+        }
+        .terminal-body .cursor-line {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .terminal-body .blinking-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--accent-green);
+            animation: cursorBlink 0.9s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        /* ============ SECTION COMMON ============ */
+        .section {
+            padding: 80px 0;
+            position: relative;
+        }
+        .section-alt {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 55px;
+        }
+        .section-label {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        .section-desc {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        /* ============ FEATURES GRID ============ */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+        .feature-card:hover {
+            border-color: var(--border-highlight);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(88, 166, 255, 0.06);
+        }
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+        .feature-card:nth-child(2):hover::before {
+            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+        }
+        .feature-card:nth-child(3):hover::before {
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+        }
+        .feature-card:nth-child(4):hover::before {
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+        }
+        .feature-card:nth-child(5):hover::before {
+            background: linear-gradient(90deg, transparent, var(--accent-orange), transparent);
+        }
+        .feature-card:nth-child(6):hover::before {
+            background: linear-gradient(90deg, transparent, var(--accent-pink), transparent);
+        }
+        .feature-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+            transition: transform var(--transition-normal);
+        }
+        .feature-card:hover .feature-icon-wrap {
+            transform: scale(1.1) rotate(-3deg);
+        }
+        .feature-icon-wrap.blue {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+        .feature-icon-wrap.purple {
+            background: rgba(163, 113, 247, 0.15);
+            color: var(--accent-purple);
+        }
+        .feature-icon-wrap.cyan {
+            background: rgba(57, 210, 192, 0.15);
+            color: var(--accent-cyan);
+        }
+        .feature-icon-wrap.green {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+        }
+        .feature-icon-wrap.orange {
+            background: rgba(210, 153, 29, 0.15);
+            color: var(--accent-orange);
+        }
+        .feature-icon-wrap.pink {
+            background: rgba(219, 97, 162, 0.15);
+            color: var(--accent-pink);
+        }
+        .feature-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .feature-card .feature-tag {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        /* ============ CODE BLOCK ============ */
+        .code-showcase {
+            background: #0a0e14;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-top: 30px;
+            position: relative;
+        }
+        .code-showcase .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #11161d;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .code-tabs {
+            display: flex;
+            gap: 4px;
+        }
+        .code-tab {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+            font-weight: 500;
+        }
+        .code-tab.active {
+            background: rgba(88, 166, 255, 0.12);
+            color: var(--accent-blue);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+        .code-tab:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .code-copy-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: all var(--transition-fast);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .code-copy-btn:hover {
+            background: var(--border-color);
+            color: #fff;
+        }
+        .code-copy-btn.copied {
+            background: rgba(63, 185, 80, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+        .code-body {
+            padding: 22px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.9;
+            overflow-x: auto;
+            color: #c9d1d9;
+            position: relative;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .code-body .line {
+            display: block;
+            animation: codeLineAppear 0.4s ease-out both;
+            white-space: pre;
+        }
+        .code-body .line:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .code-body .line:nth-child(2) {
+            animation-delay: 0.05s;
+        }
+        .code-body .line:nth-child(3) {
+            animation-delay: 0.1s;
+        }
+        .code-body .line:nth-child(4) {
+            animation-delay: 0.15s;
+        }
+        .code-body .line:nth-child(5) {
+            animation-delay: 0.2s;
+        }
+        .code-body .line:nth-child(6) {
+            animation-delay: 0.25s;
+        }
+        .code-body .line:nth-child(7) {
+            animation-delay: 0.3s;
+        }
+        .code-body .line:nth-child(8) {
+            animation-delay: 0.35s;
+        }
+        .code-body .line:nth-child(9) {
+            animation-delay: 0.4s;
+        }
+        .code-body .line:nth-child(10) {
+            animation-delay: 0.45s;
+        }
+        .code-keyword {
+            color: #ff7b72;
+        }
+        .code-string {
+            color: #a5d6ff;
+        }
+        .code-func {
+            color: #d2a8ff;
+        }
+        .code-comment {
+            color: #8b949e;
+            font-style: italic;
+        }
+        .code-number {
+            color: #79c0ff;
+        }
+        .code-type {
+            color: #ffa657;
+        }
+        .code-var {
+            color: #7ee787;
+        }
+
+        /* ============ STATS BAR ============ */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 50px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            margin: 0 auto;
+        }
+        .stat-item {
+            text-align: center;
+            transition: transform var(--transition-normal);
+        }
+        .stat-item:hover {
+            transform: translateY(-4px);
+        }
+        .stat-number {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #e6edf3, #58a6ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* ============ COMPARISON TABLE ============ */
+        .comparison-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .comparison-table thead {
+            background: var(--bg-tertiary);
+        }
+        .comparison-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .comparison-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .comparison-table tbody tr {
+            transition: background var(--transition-fast);
+        }
+        .comparison-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .comparison-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .comparison-table .check-icon {
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+        .comparison-table .cross-icon {
+            color: var(--accent-red);
+            opacity: 0.7;
+        }
+        .comparison-table .highlight-row {
+            background: rgba(88, 166, 255, 0.04);
+        }
+        .comparison-table .highlight-row td:first-child {
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        /* ============ TESTIMONIAL / QUOTE ============ */
+        .quote-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 750px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-md);
+        }
+        .quote-card::before {
+            content: '"';
+            position: absolute;
+            top: -30px;
+            left: 30px;
+            font-size: 8rem;
+            color: rgba(88, 166, 255, 0.08);
+            font-family: Georgia, serif;
+            line-height: 1;
+            pointer-events: none;
+        }
+        .quote-text {
+            font-size: 1.15rem;
+            font-style: italic;
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .quote-author {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .quote-author strong {
+            color: var(--text-primary);
+        }
+
+        /* ============ CONTRIBUTORS AVATARS ============ */
+        .contributors-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .contributor-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 3px solid var(--border-color);
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .contributor-avatar:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-glow-blue);
+            z-index: 2;
+        }
+        .contributor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .contributor-more {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 3px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+        }
+        .contributor-more:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            transform: translateY(-6px);
+        }
+
+        /* ============ BADGE ROW ============ */
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .badge-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 13px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.2px;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+        }
+        .badge-custom.npm {
+            background: #cb3837;
+            color: #fff;
+        }
+        .badge-custom.npm:hover {
+            background: #a52d2c;
+            transform: translateY(-2px);
+        }
+        .badge-custom.license {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+            border-color: rgba(63, 185, 80, 0.3);
+        }
+        .badge-custom.version {
+            background: rgba(88, 166, 255, 0.12);
+            color: var(--accent-blue);
+            border-color: rgba(88, 166, 255, 0.25);
+        }
+        .badge-custom.build {
+            background: rgba(210, 153, 29, 0.12);
+            color: var(--accent-orange);
+            border-color: rgba(210, 153, 29, 0.25);
+        }
+        .badge-custom.coverage {
+            background: rgba(57, 210, 192, 0.12);
+            color: var(--accent-cyan);
+            border-color: rgba(57, 210, 192, 0.25);
+        }
+
+        /* ============ FOOTER ============ */
+        .site-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 50px 0 30px;
+            color: var(--text-muted);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 30px;
+            margin-bottom: 35px;
+        }
+        .footer-col h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col ul li {
+            margin-bottom: 8px;
+        }
+        .footer-col ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color var(--transition-fast);
+        }
+        .footer-col ul li a:hover {
+            color: var(--text-link);
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem;
+        }
+        .footer-bottom .heart {
+            color: var(--accent-red);
+            animation: floatSlow 2s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        /* ============ BACK TO TOP ============ */
+        .back-to-top {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-md);
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .back-to-top:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-glow-blue);
+            transform: translateY(-4px);
+        }
+
+        /* ============ MOBILE NAV ============ */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            background: rgba(13, 17, 23, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            z-index: 999;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: var(--shadow-lg);
+        }
+        .mobile-menu.open {
+            display: flex;
+        }
+        .mobile-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            display: block;
+        }
+        .mobile-menu a:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 968px) {
+            .nav-links {
+                display: none;
+            }
+            .nav-github-btn {
+                display: none;
+            }
+            .nav-toggle {
+                display: block;
+            }
+            .hero-section {
+                padding: 50px 0 40px;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-terminal {
+                margin-top: 30px;
+            }
+            .stats-bar {
+                gap: 24px;
+                padding: 30px 0;
+            }
+            .stat-number {
+                font-size: 2rem;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .section {
+                padding: 50px 0;
+            }
+            .code-body {
+                font-size: 0.72rem;
+                padding: 14px;
+            }
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px 12px;
+                font-size: 0.78rem;
+            }
+        }
+        @media (max-width: 600px) {
+            .hero-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .stats-bar {
+                gap: 16px;
+            }
+            .stat-number {
+                font-size: 1.6rem;
+            }
+            .stat-label {
+                font-size: 0.72rem;
+            }
+            .badge-row {
+                gap: 6px;
+            }
+            .badge-custom {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 顶部公告栏 ==================== -->
+    <div class="announcement-bar">
+        <span class="badge-new">NEW</span>
+        QuantumDB v3.2 已发布！支持分布式事务与自动分片 —
+        <a href="#changelog">查看更新日志 →</a>
+    </div>
+
+    <!-- ==================== 导航栏 ==================== -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="#" class="nav-brand">
+                <span class="brand-icon">⚛️</span>
+                <span>QuantumDB</span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#features" class="nav-active">特性</a></li>
+                <li><a href="#quickstart">快速开始</a></li>
+                <li><a href="#docs">文档</a></li>
+                <li><a href="#benchmarks">性能对比</a></li>
+                <li><a href="#community">社区</a></li>
+                <li><a href="#api">API 参考</a></li>
+            </ul>
+            <a href="https://github.com" class="nav-github-btn" target="_blank" rel="noopener" aria-label="GitHub仓库">
+                <i class="fa-brands fa-github"></i> Star <span class="star-count">12.8k</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="导航菜单">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+    <!-- 移动端菜单 -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#features">✨ 特性</a>
+        <a href="#quickstart">🚀 快速开始</a>
+        <a href="#docs">📖 文档</a>
+        <a href="#benchmarks">📊 性能对比</a>
+        <a href="#community">💬 社区</a>
+        <a href="#api">🔧 API 参考</a>
+        <a href="https://github.com" target="_blank" rel="noopener" style="color:var(--accent-orange);">
+            <i class="fa-brands fa-github"></i> GitHub (12.8k ⭐)
+        </a>
+    </div>
+
+    <!-- ==================== HERO 区域 ==================== -->
+    <header class="hero-section" id="hero">
+        <div class="container hero-content">
+            <div class="hero-badge">
+                <span class="version-dot"></span> 稳定版 v3.2.1 · 2026年6月发布
+            </div>
+            <h1 class="hero-title">高性能分布式<br>数据库 ORM 框架</h1>
+            <p class="hero-subtitle">
+                为 Node.js 和 TypeScript 打造的下一代 ORM。支持 <span class="highlight">MySQL</span>、
+                <span class="highlight-purple">PostgreSQL</span>、
+                <span class="highlight-cyan">SQLite</span> 及
+                <span class="highlight-green">MongoDB</span>，
+                内置查询构建器、自动迁移、分布式事务与智能缓存。
+            </p>
+            <div class="hero-actions">
+                <a href="#quickstart" class="btn btn-primary">
+                    <i class="fa-solid fa-rocket"></i> 快速开始
+                </a>
+                <a href="https://github.com" class="btn btn-secondary" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+                <a href="#docs" class="btn btn-ghost">
+                    <i class="fa-solid fa-book"></i> 阅读文档
+                </a>
+            </div>
+            <!-- 终端模拟 -->
+            <div class="hero-terminal">
+                <div class="terminal-header">
+                    <span class="terminal-dot red"></span>
+                    <span class="terminal-dot yellow"></span>
+                    <span class="terminal-dot green"></span>
+                    <span class="terminal-title">终端 — 安装 QuantumDB</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="line"><span class="prompt">$</span> <span class="cmd">npm install quantumdb</span></div>
+                    <div class="line output-dim" style="animation-delay:0.3s;">⠙ 正在解析依赖包...</div>
+                    <div class="line output-success" style="animation-delay:0.6s;">✓ 已安装 quantumdb@3.2.1</div>
+                    <div class="line output-dim" style="animation-delay:0.9s;">✓ 共 42 个依赖包，耗时 2.3s</div>
+                    <div class="line cursor-line" style="animation-delay:1.2s;">
+                        <span class="prompt">$</span> <span class="cmd">npx quantumdb init</span><span class="blinking-cursor"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Badges -->
+            <div class="badge-row" style="margin-top:24px;">
+                <a href="#" class="badge-custom npm"><i class="fa-brands fa-npm"></i> npm</a>
+                <span class="badge-custom version">v3.2.1</span>
+                <span class="badge-custom license"><i class="fa-solid fa-scale-balanced"></i> MIT</span>
+                <span class="badge-custom build"><i class="fa-solid fa-check-circle"></i> CI 通过</span>
+                <span class="badge-custom coverage">98.7% 覆盖率</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== 统计数据栏 ==================== -->
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" data-count="12800">12.8k</div>
+                <div class="stat-label">GitHub Stars</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-count="3200">3.2k</div>
+                <div class="stat-label">Forks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-count="850">850万+</div>
+                <div class="stat-label">npm 周下载量</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-count="280">280+</div>
+                <div class="stat-label">贡献者</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-count="99">99.99%</div>
+                <div class="stat-label">生产环境可用率</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 特性区域 ==================== -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">核心特性</span>
+                <h2 class="section-title">为什么选择 QuantumDB？</h2>
+                <p class="section-desc">专为现代应用打造，兼具开发者体验与生产级性能。</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-wrap blue"><i class="fa-solid fa-bolt"></i></div>
+                    <h3>⚡ 极致性能</h3>
+                    <p>基于原生数据库驱动深度优化，查询速度比主流 ORM 快 <strong>3-8倍</strong>。内置连接池与预编译缓存。</p>
+                    <span class="feature-tag">性能</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap purple"><i class="fa-solid fa-layer-group"></i></div>
+                    <h3>🔀 分布式事务</h3>
+                    <p>支持跨数据库的 ACID 事务，自动两阶段提交（2PC），轻松处理微服务中的数据一致性。</p>
+                    <span class="feature-tag">企业级</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap cyan"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3>🪄 自动迁移</h3>
+                    <p>声明式模型定义，自动生成并执行迁移脚本。支持 <span class="highlight-cyan">零停机</span> 在线迁移。</p>
+                    <span class="feature-tag">DX 体验</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap green"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>🛡️ 类型安全</h3>
+                    <p>一流的 TypeScript 支持，完整的类型推断。在编译时捕获 SQL 错误，告别运行时意外。</p>
+                    <span class="feature-tag">安全</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap orange"><i class="fa-solid fa-globe"></i></div>
+                    <h3>🌐 多数据库支持</h3>
+                    <p>统一的 API 操作 MySQL、PostgreSQL、SQLite、MongoDB。一套代码，无缝切换数据库后端。</p>
+                    <span class="feature-tag">灵活</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrap pink"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>📈 内置监控</h3>
+                    <p>实时查询分析、慢查询日志、连接池指标。集成 Prometheus 和 Grafana 仪表板。</p>
+                    <span class="feature-tag">可观测</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 快速开始 / 代码展示 ==================== -->
+    <section class="section section-alt" id="quickstart">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">5分钟上手</span>
+                <h2 class="section-title">快速开始</h2>
+                <p class="section-desc">只需几行代码即可连接数据库并执行查询。</p>
+            </div>
+            <div class="code-showcase">
+                <div class="code-header">
+                    <div class="code-tabs">
+                        <button class="code-tab active" data-tab="tab-ts">TypeScript</button>
+                        <button class="code-tab" data-tab="tab-js">JavaScript</button>
+                        <button class="code-tab" data-tab="tab-config">配置文件</button>
+                    </div>
+                    <button class="code-copy-btn" id="codeCopyBtn" aria-label="复制代码">
+                        <i class="fa-regular fa-copy"></i> 复制
+                    </button>
+                </div>
+                <div class="code-body" id="codeBodyTS">
+                    <span class="line"><span class="code-keyword">import</span> { <span class="code-var">QuantumDB</span>, <span class="code-var">Model</span>, <span class="code-var">Field</span> } <span class="code-keyword">from</span> <span class="code-string">'quantumdb'</span>;</span>
+                    <span class="line"></span>
+                    <span class="line"><span class="code-comment">// 1. 初始化连接</span></span>
+                    <span class="line"><span class="code-keyword">const</span> <span class="code-var">db</span> = <span class="code-keyword">new</span> <span class="code-type">QuantumDB</span>({</span>
+                    <span class="line">  <span class="code-var">dialect</span>: <span class="code-string">'postgresql'</span>,</span>
+                    <span class="line">  <span class="code-var">url</span>: <span class="code-string">'postgres://user:pass@localhost:5432/mydb'</span>,</span>
+                    <span class="line">  <span class="code-var">pool</span>: { <span class="code-var">max</span>: <span class="code-number">20</span>, <span class="code-var">min</span>: <span class="code-number">5</span> },</span>
+                    <span class="line">});</span>
+                    <span class="line"></span>
+                    <span class="line"><span class="code-comment">// 2. 定义模型</span></span>
+                    <span class="line"><span class="code-keyword">class</span> <span class="code-type">User</span> <span class="code-keyword">extends</span> <span class="code-type">Model</span> {</span>
+                    <span class="line">  <span class="code-var">id</span>: <span class="code-type">number</span>;</span>
+                    <span class="line">  <span class="code-var">name</span>: <span class="code-type">string</span>;</span>
+                    <span class="line">  <span class="code-var">email</span>: <span class="code-type">string</span>;</span>
+                    <span class="line">}</span>
+                    <span class="line"></span>
+                    <span class="line"><span class="code-comment">// 3. 执行查询</span></span>
+                    <span class="line"><span class="code-keyword">const</span> <span class="code-var">users</span> = <span class="code-keyword">await</span> <span class="code-var">db</span>.<span class="code-func">select</span>(<span class="code-type">User</span>)</span>
+                    <span class="line">  .<span class="code-func">where</span>({ <span class="code-var">active</span>: <span class="code-keyword">true</span> })</span>
+                    <span class="line">  .<span class="code-func">orderBy</span>(<span class="code-string">'name'</span>, <span class="code-string">'asc'</span>)</span>
+                    <span class="line">  .<span class="code-func">limit</span>(<span class="code-number">10</span>)</span>
+                    <span class="line">  .<span class="code-func">execute</span>();</span>
+                </div>
+                <div class="code-body" id="codeBodyJS" style="display:none;">
+                    <span class="line"><span class="code-keyword">const</span> { <span class="code-var">QuantumDB</span> } = <span class="code-keyword">require</span>(<span class="code-string">'quantumdb'</span>);</span>
+                    <span class="line"></span>
+                    <span class="line"><span class="code-comment">// 初始化</span></span>
+                    <span class="line"><span class="code-keyword">const</span> <span class="code-var">db</span> = <span class="code-keyword">new</span> <span class="code-type">QuantumDB</span>({</span>
+                    <span class="line">  <span class="code-var">dialect</span>: <span class="code-string">'mysql'</span>,</span>
+                    <span class="line">  <span class="code-var">host</span>: <span class="code-string">'localhost'</span>,</span>
+                    <span class="line">  <span class="code-var">database</span>: <span class="code-string">'myapp'</span>,</span>
+                    <span class="line">});</span>
+                    <span class="line"></span>
+                    <span class="line"><span class="code-comment">// 原生查询</span></span>
+                    <span class="line"><span class="code-keyword">const</span> <span class="code-var">result</span> = <span class="code-keyword">await</span> <span class="code-var">db</span>.<span class="code-func">raw</span>(</span>
+                    <span class="line">  <span class="code-string">'SELECT * FROM users WHERE age > ?'</span>,</span>
+                    <span class="line">  [<span class="code-number">18</span>]</span>
+                    <span class="line">);</span>
+                    <span class="line"><span class="code-var">console</span>.<span class="code-func">log</span>(<span class="code-var">result</span>.<span class="code-var">rows</span>);</span>
+                </div>
+                <div class="code-body" id="codeBodyConfig" style="display:none;">
+                    <span class="line"><span class="code-comment"># quantumdb.config.yaml</span></span>
+                    <span class="line"><span class="code-var">dialect</span>: <span class="code-string">postgresql</span></span>
+                    <span class="line"><span class="code-var">connection</span>:</span>
+                    <span class="line">  <span class="code-var">host</span>: <span class="code-string">db.example.com</span></span>
+                    <span class="line">  <span class="code-var">port</span>: <span class="code-number">5432</span></span>
+                    <span class="line">  <span class="code-var">database</span>: <span class="code-string">production_db</span></span>
+                    <span class="line">  <span class="code-var">ssl</span>: <span class="code-keyword">true</span></span>
+                    <span class="line"><span class="code-var">pool</span>:</span>
+                    <span class="line">  <span class="code-var">max</span>: <span class="code-number">50</span></span>
+                    <span class="line">  <span class="code-var">idle_timeout</span>: <span class="code-number">30000</span></span>
+                    <span class="line"><span class="code-var">migrations</span>:</span>
+                    <span class="line">  <span class="code-var">auto_run</span>: <span class="code-keyword">true</span></span>
+                    <span class="line">  <span class="code-var">directory</span>: <span class="code-string">./db/migrations</span></span>
+                    <span class="line"><span class="code-var">logging</span>:</span>
+                    <span class="line">  <span class="code-var">level</span>: <span class="code-string">info</span></span>
+                    <span class="line">  <span class="code-var">slow_query_threshold</span>: <span class="code-number">200</span><span class="code-comment"> # ms</span></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 性能对比 ==================== -->
+    <section class="section" id="benchmarks">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">性能数据</span>
+                <h2 class="section-title">ORM 性能对比</h2>
+                <p class="section-desc">在相同硬件环境下，对 100万条记录进行 CRUD 基准测试。</p>
+            </div>
+            <div class="comparison-table-wrap">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>框架</th>
+                            <th>SELECT (ms)</th>
+                            <th>INSERT (ms)</th>
+                            <th>UPDATE (ms)</th>
+                            <th>DELETE (ms)</th>
+                            <th>内存占用</th>
+                            <th>TypeScript</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="highlight-row">
+                            <td><strong>🏆 QuantumDB</strong></td>
+                            <td><span class="highlight-green">42</span></td>
+                            <td><span class="highlight-green">68</span></td>
+                            <td><span class="highlight-green">55</span></td>
+                            <td><span class="highlight-green">38</span></td>
+                            <td>48 MB</td>
+                            <td><span class="check-icon">✅</span></td>
+                        </tr>
+                        <tr>
+                            <td>Prisma</td>
+                            <td>156</td>
+                            <td>210</td>
+                            <td>185</td>
+                            <td>142</td>
+                            <td>112 MB</td>
+                            <td><span class="check-icon">✅</span></td>
+                        </tr>
+                        <tr>
+                            <td>TypeORM</td>
+                            <td>198</td>
+                            <td>245</td>
+                            <td>220</td>
+                            <td>178</td>
+                            <td>135 MB</td>
+                            <td><span class="check-icon">✅</span></td>
+                        </tr>
+                        <tr>
+                            <td>Sequelize</td>
+                            <td>320</td>
+                            <td>380</td>
+                            <td>355</td>
+                            <td>290</td>
+                            <td>168 MB</td>
+                            <td><span class="cross-icon">⚠️ 部分</span></td>
+                        </tr>
+                        <tr>
+                            <td>Knex.js</td>
+                            <td>95</td>
+                            <td>130</td>
+                            <td>118</td>
+                            <td>88</td>
+                            <td>62 MB</td>
+                            <td><span class="cross-icon">❌</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align:center;margin-top:16px;font-size:0.82rem;color:var(--text-muted);">
+                <i class="fa-solid fa-info-circle"></i> 测试环境：Node.js 22 LTS, Intel Xeon E5-2680 v4, 64GB RAM, PostgreSQL 16。
+                <a href="#" style="color:var(--text-link);">查看完整基准测试报告 →</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- ==================== 社区引用 ==================== -->
+    <section class="section section-alt" id="community">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">社区声音</span>
+                <h2 class="section-title">开发者们怎么说</h2>
+            </div>
+            <div class="quote-card">
+                <p class="quote-text">
+                    在从 Prisma 迁移到 QuantumDB 后，我们的 API 响应时间缩短了 <strong style="color:#3fb950;">62%</strong>，
+                    数据库连接池的内存开销降低了近一半。它的分布式事务支持让我们轻松实现了跨服务的数据库操作，
+                    这在微服务架构中简直是救星。
+                </p>
+                <p class="quote-author">
+                    — <strong>张明远</strong>，TechLead @ Alibaba Cloud · 贡献者
+                </p>
+            </div>
+            <div style="text-align:center;margin-top:30px;">
+                <p style="color:var(--text-muted);margin-bottom:16px;font-size:0.9rem;">感谢所有贡献者</p>
+                <div class="contributors-row">
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">A</a>
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">B</a>
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">C</a>
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">D</a>
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">E</a>
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">F</a>
+                    <a href="#" class="contributor-avatar" title="贡献者" aria-label="贡献者头像">G</a>
+                    <a href="#" class="contributor-more" title="查看更多贡献者">+270</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 文档链接区 ==================== -->
+    <section class="section" id="docs">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">深入学习</span>
+                <h2 class="section-title">文档 & 资源</h2>
+                <p class="section-desc">从入门到精通，我们提供了丰富的学习材料。</p>
+            </div>
+            <div class="features-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
+                <div class="feature-card" style="cursor:pointer;" onclick="this.querySelector('a')?.click()">
+                    <div class="feature-icon-wrap blue"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <h3><a href="#" style="color:inherit;text-decoration:none;">入门教程</a></h3>
+                    <p>从零开始，逐步学习 QuantumDB 的核心概念与基础用法。</p>
+                </div>
+                <div class="feature-card" style="cursor:pointer;">
+                    <div class="feature-icon-wrap purple"><i class="fa-solid fa-code"></i></div>
+                    <h3><a href="#" style="color:inherit;text-decoration:none;">API 参考</a></h3>
+                    <p>完整的 API 文档，包含所有类、方法和类型定义。</p>
+                </div>
+                <div class="feature-card" style="cursor:pointer;">
+                    <div class="feature-icon-wrap cyan"><i class="fa-solid fa-video"></i></div>
+                    <h3><a href="#" style="color:inherit;text-decoration:none;">视频课程</a></h3>
+                    <p>超过 20 小时的免费视频教程，覆盖实战项目。</p>
+                </div>
+                <div class="feature-card" style="cursor:pointer;">
+                    <div class="feature-icon-wrap green"><i class="fa-solid fa-puzzle-piece"></i></div>
+                    <h3><a href="#" style="color:inherit;text-decoration:none;">插件市场</a></h3>
+                    <p>社区贡献的插件，扩展 QuantumDB 的功能边界。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== API 参考快速预览 ==================== -->
+    <section class="section section-alt" id="api">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">API 预览</span>
+                <h2 class="section-title">常用 API 速览</h2>
+            </div>
+            <div class="code-showcase">
+                <div class="code-header">
+                    <span style="color:var(--text-muted);font-size:0.82rem;">查询构建器 API 示例</span>
+                </div>
+                <div class="code-body">
+                    <span class="line"><span class="code-comment">// 链式查询 - 复杂条件</span></span>
+                    <span class="line"><span class="code-keyword">const</span> <span class="code-var">orders</span> = <span class="code-keyword">await</span> <span class="code-var">db</span>.<span class="code-func">select</span>(<span class="code-type">Order</span>)</span>
+                    <span class="line">  .<span class="code-func">join</span>(<span class="code-type">User</span>, <span class="code-string">'user_id'</span>)</span>
+                    <span class="line">  .<span class="code-func">where</span>({ <span class="code-var">status</span>: [<span class="code-string">'pending'</span>, <span class="code-string">'processing'</span>] })</span>
+                    <span class="line">  .<span class="code-func">whereBetween</span>(<span class="code-string">'created_at'</span>, <span class="code-var">startDate</span>, <span class="code-var">endDate</span>)</span>
+                    <span class="line">  .<span class="code-func">groupBy</span>(<span class="code-string">'category'</span>)</span>
+                    <span class="line">  .<span class="code-func">having</span>(<span class="code-string">'total'</span>, <span class="code-string">'>'</span>, <span class="code-number">1000</span>)</span>
+                    <span class="line">  .<span class="code-func">paginate</span>({ <span class="code-var">page</span>: <span class="code-number">1</span>, <span class="code-var">perPage</span>: <span class="code-number">25</span> })</span>
+                    <span class="line">  .<span class="code-func">withCache</span>({ <span class="code-var">ttl</span>: <span class="code-number">60</span> })<span class="code-comment"> // 自动缓存 60 秒</span></span>
+                    <span class="line">  .<span class="code-func">execute</span>();</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 页脚 ==================== -->
+    <footer class="site-footer" id="changelog">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>产品</h4>
+                    <ul>
+                        <li><a href="#">特性</a></li>
+                        <li><a href="#">定价</a></li>
+                        <li><a href="#">企业版</a></li>
+                        <li><a href="#">更新日志</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>资源</h4>
+                    <ul>
+                        <li><a href="#">文档</a></li>
+                        <li><a href="#">API 参考</a></li>
+                        <li><a href="#">教程</a></li>
+                        <li><a href="#">示例项目</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>社区</h4>
+                    <ul>
+                        <li><a href="#">GitHub Discussions</a></li>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">博客</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>关于</h4>
+                    <ul>
+                        <li><a href="#">团队</a></li>
+                        <li><a href="#">贡献指南</a></li>
+                        <li><a href="#">行为准则</a></li>
+                        <li><a href="#">安全政策</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>
+                    &copy; 2026 QuantumDB 项目组 · 基于 <strong>MIT</strong> 许可证开源 ·
+                    用 <span class="heart">❤️</span> 构建于社区
+                </p>
+                <p style="margin-top:6px;font-size:0.75rem;">
+                    <a href="#" style="color:var(--text-muted);">隐私政策</a> ·
+                    <a href="#" style="color:var(--text-muted);">服务条款</a> ·
+                    <a href="#" style="color:var(--text-muted);">Cookie 设置</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== 回到顶部按钮 ==================== -->
+    <button class="back-to-top" id="backToTop" aria-label="回到顶部">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+
+    <!-- ==================== JavaScript ==================== -->
+    <script>
+        (function() {
+            // DOM 元素
+            const navbar = document.getElementById('navbar');
+            const navToggle = document.getElementById('navToggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const backToTop = document.getElementById('backToTop');
+            const codeCopyBtn = document.getElementById('codeCopyBtn');
+            const codeTabs = document.querySelectorAll('.code-tab');
+            const codeBodies = {
+                'tab-ts': document.getElementById('codeBodyTS'),
+                'tab-js': document.getElementById('codeBodyJS'),
+                'tab-config': document.getElementById('codeBodyConfig'),
+            };
+            const navLinks = document.querySelectorAll('.nav-links a');
+            const mobileNavLinks = document.querySelectorAll('.mobile-menu a[href^="#"]');
+
+            // ========== 导航栏滚动效果 ==========
+            let scrollTimeout;
+            function updateNavbar() {
+                if (window.scrollY > 40) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                // 回到顶部按钮
+                if (window.scrollY > 600) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+                // 高亮当前导航项
+                updateActiveNavLink();
+            }
+
+            function updateActiveNavLink() {
+                const sections = document.querySelectorAll('section[id], header[id]');
+                let currentSectionId = '';
+                const scrollPos = window.scrollY + 120;
+                sections.forEach(section => {
+                    const top = section.offsetTop;
+                    const height = section.offsetHeight;
+                    if (scrollPos >= top && scrollPos < top + height) {
+                        currentSectionId = section.id;
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-active');
+                    if (link.getAttribute('href') === '#' + currentSectionId) {
+                        link.classList.add('nav-active');
+                    }
+                });
+                if (!currentSectionId && navLinks.length > 0) {
+                    navLinks[0].classList.add('nav-active');
+                }
+            }
+
+            window.addEventListener('scroll', () => {
+                if (scrollTimeout) cancelAnimationFrame(scrollTimeout);
+                scrollTimeout = requestAnimationFrame(updateNavbar);
+            }, { passive: true });
+            updateNavbar();
+
+            // ========== 移动端菜单 ==========
+            navToggle.addEventListener('click', () => {
+                const isOpen = mobileMenu.classList.toggle('open');
+                navToggle.innerHTML = isOpen ?
+                    '<i class="fa-solid fa-xmark"></i>' :
+                    '<i class="fa-solid fa-bars"></i>';
+                navToggle.setAttribute('aria-expanded', isOpen);
+            });
+            // 点击移动端菜单链接后关闭
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.remove('open');
+                    navToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                    navToggle.setAttribute('aria-expanded', 'false');
+                });
+            });
+            // 点击菜单外部关闭
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !navToggle.contains(e.target) && mobileMenu
+                    .classList.contains('open')) {
+                    mobileMenu.classList.remove('open');
+                    navToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                    navToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // ========== 回到顶部 ==========
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ========== 代码标签切换 ==========
+            codeTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    codeTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetTab = tab.dataset.tab;
+                    Object.keys(codeBodies).forEach(key => {
+                        if (codeBodies[key]) {
+                            codeBodies[key].style.display = key === targetTab ? '' :
+                                'none';
+                        }
+                    });
+                });
+            });
+
+            // ========== 复制代码按钮 ==========
+            codeCopyBtn.addEventListener('click', () => {
+                const activeTab = document.querySelector('.code-tab.active');
+                const targetKey = activeTab ? activeTab.dataset.tab : 'tab-ts';
+                const codeBody = codeBodies[targetKey];
+                if (!codeBody) return;
+                // 提取纯文本（去除HTML标签和动画延迟样式）
+                const lines = codeBody.querySelectorAll('.line');
+                let text = '';
+                lines.forEach(line => {
+                    text += line.textContent + '\n';
+                });
+                text = text.trim();
+                navigator.clipboard.writeText(text).then(() => {
+                    codeCopyBtn.classList.add('copied');
+                    codeCopyBtn.innerHTML =
+                        '<i class="fa-solid fa-check"></i> 已复制';
+                    setTimeout(() => {
+                        codeCopyBtn.classList.remove('copied');
+                        codeCopyBtn.innerHTML =
+                            '<i class="fa-regular fa-copy"></i> 复制';
+                    }, 2000);
+                }).catch(() => {
+                    // 降级方案
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try { document.execCommand('copy'); } catch (e) { /* noop */ }
+                    document.body.removeChild(textarea);
+                    codeCopyBtn.classList.add('copied');
+                    codeCopyBtn.innerHTML =
+                        '<i class="fa-solid fa-check"></i> 已复制';
+                    setTimeout(() => {
+                        codeCopyBtn.classList.remove('copied');
+                        codeCopyBtn.innerHTML =
+                            '<i class="fa-regular fa-copy"></i> 复制';
+                    }, 2000);
+                });
+            });
+
+            // ========== 统计数字动画 ==========
+            const statNumbers = document.querySelectorAll('.stat-number[data-count]');
+            let statsAnimated = false;
+
+            function animateStats() {
+                if (statsAnimated) return;
+                const statsBar = document.querySelector('.stats-bar');
+                if (!statsBar) return;
+                const rect = statsBar.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 80 && rect.bottom > 0) {
+                    statsAnimated = true;
+                    statNumbers.forEach(el => {
+                        const targetText = el.getAttribute('data-count');
+                        // 解析目标值
+                        let targetNum = parseFloat(targetText);
+                        if (isNaN(targetNum)) {
+                            // 非纯数字，直接显示
+                            el.textContent = targetText;
+                            el.style.animation = 'statCountUp 0.6s ease-out both';
+                            return;
+                        }
+                        const suffix = targetText.replace(/[\d.]/g, '');
+                        const isDecimal = targetText.includes('.');
+                        const decimals = isDecimal ? targetText.split('.')[1].length : 0;
+                        const duration = 1500;
+                        const startTime = performance.now();
+                        const startVal = 0;
+
+                        function update(currentTime) {
+                            const elapsed = currentTime - startTime;
+                            const progress = Math.min(elapsed / duration, 1);
+                            // easeOutCubic
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            const current = startVal + (targetNum - startVal) * eased;
+                            if (isDecimal) {
+                                el.textContent = current.toFixed(decimals) + suffix;
+                            } else if (targetNum >= 1000) {
+                                el.textContent = Math.floor(current).toLocaleString() + suffix;
+                            } else {
+                                el.textContent = Math.floor(current) + suffix;
+                            }
+                            if (progress < 1) {
+                                requestAnimationFrame(update);
+                            } else {
+                                el.textContent = targetText;
+                            }
+                        }
+                        requestAnimationFrame(update);
+                        el.style.animation = 'statCountUp 0.6s ease-out both';
+                    });
+                }
+            }
+            window.addEventListener('scroll', animateStats, { passive: true });
+            // 初始检查
+            setTimeout(animateStats, 300);
+
+            // ========== 特性卡片悬停3D微倾斜效果 ==========
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -4;
+                    const rotateY = ((x - centerX) / centerX) * 4;
+                    card.style.transform =
+                        `translateY(-4px) perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = '';
+                });
+            });
+
+            // ========== 导航链接平滑滚动 ==========
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        const offset = 80;
+                        const top = target.getBoundingClientRect().top + window.pageYOffset -
+                            offset;
+                        window.scrollTo({ top, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // ========== 键盘导航 ==========
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && mobileMenu.classList.contains('open')) {
+                    mobileMenu.classList.remove('open');
+                    navToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                    navToggle.setAttribute('aria-expanded', 'false');
+                    navToggle.focus();
+                }
+            });
+
+            console.log('%c🚀 QuantumDB 项目主页已就绪 %c| %cMade with ❤️',
+                'color:#58a6ff;font-weight:bold;',
+                'color:#8b949e;',
+                'color:#f85149;');
+            console.log('%c💡 提示：点击终端模拟区域上方的标签切换代码示例。',
+                'color:#8b949e;font-style:italic;');
+        })();
+    </script>
+</body>
+</html>
